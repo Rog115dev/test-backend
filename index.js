@@ -1,8 +1,9 @@
 import express from 'express';
 import cors from 'cors';
-import OpenAI from "openai";
+import OpenAI from 'openai';
 import dotenv from 'dotenv';
 dotenv.config();
+
 const app = express();
 const port = process.env.PORT || 8000;
 
@@ -13,18 +14,18 @@ app.use(cors({
   allowedHeaders: '*'
 }));
 app.use(express.json());
-const openai = new OpenAI({
-    apiKey: process.env.apiKey,
-  });
- 
 
-const assistant_id = process.env.assistant_id;
+const openai = new OpenAI({
+  apiKey: process.env.apiKey,
+});
+
+let assistant_id = process.env.assistant_id;
 const run_finished_states = ['completed', 'failed', 'cancelled', 'expired', 'requires_action'];
 
 app.get('/', (req, res) => {
-    res.send('Hello World!');
-  });
-  
+  res.send('Hello World!');
+});
+
 app.post('/api/new', async (req, res) => {
   try {
     const thread = await openai.beta.threads.create();
@@ -38,6 +39,7 @@ app.post('/api/new', async (req, res) => {
     const run = await openai.beta.threads.runs.create(thread.id, {
       assistant_id: assistant_id
     });
+
 
     res.json({
       run_id: run.id,
@@ -120,6 +122,7 @@ app.post('/api/threads/:thread_id', async (req, res) => {
       assistant_id: assistant_id
     });
 
+
     res.json({
       run_id: run.id,
       thread_id: thread_id,
@@ -130,6 +133,15 @@ app.post('/api/threads/:thread_id', async (req, res) => {
   } catch (error) {
     res.status(500).send(error.message);
   }
+});
+
+app.post('/api/update-assistant-id', (req, res) => {
+  const { newAssistantId } = req.body;
+  if (!newAssistantId) {
+    return res.status(400).send('newAssistantId is required');
+  }
+  assistant_id = newAssistantId;
+  res.send(`Assistant ID updated to ${newAssistantId}`);
 });
 
 app.listen(port, () => {
