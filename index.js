@@ -145,67 +145,67 @@ app.post('/api/update-assistant-id', (req, res) => {
   res.send(`Assistant ID updated to ${newAssistantId}`);
 });
 // //mongoDB
-// const assistantSchema = new mongoose.Schema({
-//   assistantId: { type: String, unique: true },
-//   assistantName: { type: String, unique: false },
-//   // Add other fields as necessary
-// });
+const assistantSchema = new mongoose.Schema({
+  assistantId: { type: String, unique: true },
+  assistantName: { type: String, unique: false },
+  // Add other fields as necessary
+});
 
-// const Assistant = mongoose.model('Assistant', assistantSchema); // Changed model name to singular
+const Assistant = mongoose.model('Assistant', assistantSchema); // Changed model name to singular
 
-// app.post('/api/assistants', async (req, res) => {
-//   console.log(req.body);
-//   const assistant = new Assistant({
-//     assistantId: req.body.assistantId,
-//     assistantName: req.body.assistantName,
-//     // Add other fields as necessary`
-//   });
-//   try {
-//     await assistant.save();
-//     res.status(201).json(assistant);
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// });
+app.post('/api/assistants', async (req, res) => {
+  console.log(req.body);
+  const assistant = new Assistant({
+    assistantId: req.body.assistantId,
+    assistantName: req.body.assistantName,
+    // Add other fields as necessary`
+  });
+  try {
+    await assistant.save();
+    res.status(201).json(assistant);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
-// app.get('/api/assistants', async (req, res) => {
-//   try {
-//     const assistants = await Assistant.find();
-//     res.json(assistants);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
+app.get('/api/assistants', async (req, res) => {
+  try {
+    const assistants = await Assistant.find();
+    res.json(assistants);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-// app.put('/api/assistants/:id', async (req, res) => {
-//   const { id } = req.params;
-//   const assistant = {
-//     assistantId: req.body.assistantId,
-//     assitantName: req.body.assitantName,
-//   }
-//   try {
-//     const updatedAssistant = await Assistant.findByIdAndUpdate(id, assistant, { new: true });
-//     if (!updatedAssistant) {
-//       return res.status(404).json({ error: 'Assistant not found' });
-//     }
-//     res.json(updatedAssistant);
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
+app.put('/api/assistants/:id', async (req, res) => {
+  const { id } = req.params;
+  const assistant = {
+    assistantId: req.body.assistantId,
+    assitantName: req.body.assitantName,
+  }
+  try {
+    const updatedAssistant = await Assistant.findByIdAndUpdate(id, assistant, { new: true });
+    if (!updatedAssistant) {
+      return res.status(404).json({ error: 'Assistant not found' });
+    }
+    res.json(updatedAssistant);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-// app.delete('/api/assistants/:id', async (req, res) => {
-//   const { id } = req.params;
-//   try {
-//     const deletedAssistant = await Assistant.findByIdAndDelete(id);
-//     if (!deletedAssistant) {
-//       return res.status(404).json({ error: 'Assistant not found' });
-//     }
-//     res.json({ message: 'Assistant deleted successfully' });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
+app.delete('/api/assistants/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deletedAssistant = await Assistant.findByIdAndDelete(id);
+    if (!deletedAssistant) {
+      return res.status(404).json({ error: 'Assistant not found' });
+    }
+    res.json({ message: 'Assistant deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
