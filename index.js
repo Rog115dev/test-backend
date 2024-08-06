@@ -9,9 +9,7 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 8000;
 
-// app.use(cors({
-//   origin: 'https://ai.esmed.org', // Change this to your frontend origin
-// }));
+app.use(cors());
 app.use(express.json());
 
 const openai = new OpenAI({
