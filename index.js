@@ -10,10 +10,7 @@ const app = express();
 const port = process.env.PORT || 8000;
 
 app.use(cors({
-  origin: '*',
-  credentials: true,
-  methods: '*',
-  allowedHeaders: '*'
+  origin: 'https://ai.esmed.org', // Change this to your frontend origin
 }));
 app.use(express.json());
 
