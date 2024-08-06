@@ -27,7 +27,7 @@ mongoose.connect('mongodb+srv://artem:artem1105@aiesmed.i7iu8ne.mongodb.net/assi
 });
 
 app.get('/', (req, res) => {
- res.send('Hello World!');
+ res.send('Hello World!!');
 });
 
 app.post('/api/new', async (req, res) => {
