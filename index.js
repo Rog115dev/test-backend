@@ -1,5 +1,5 @@
 import express from 'express';
-import cors from 'cors';
+// import cors from 'cors';
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
@@ -16,11 +16,11 @@ const port = process.env.PORT || 8000;
 //   next();
 // });
 
-app.use(cors({
-  origin: 'https://ai.esmed.org/', // Replace with your actual frontend domain
-  methods: 'GET,POST,PUT,DELETE,OPTIONS',
-  allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, x-access-token, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Authorization'
-}));
+// app.use(cors({
+//   origin: 'https://ai.esmed.org/', // Replace with your actual frontend domain
+//   methods: 'GET,POST,PUT,DELETE,OPTIONS',
+//   allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, x-access-token, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Authorization'
+// }));
 
 app.use(express.json());
 
