@@ -9,7 +9,11 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 8000;
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://ai.esmed.org', // Allow requests from this origin
+  methods: 'GET,POST,PUT,DELETE', // Allow these methods
+  credentials: true // Allow credentials (cookies, etc.)
+}));
 app.use(express.json());
 
 const openai = new OpenAI({
