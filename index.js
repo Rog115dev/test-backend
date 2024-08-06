@@ -9,14 +9,18 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 8000;
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-access-token");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  next();
-});
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-access-token");
+//   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+//   next();
+// });
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://ai.esmed.org/', // Replace with your actual frontend domain
+  methods: 'GET,POST,PUT,DELETE,OPTIONS',
+  allowedHeaders: 'Origin, X-Requested-With, Content-Type, Accept, x-access-token'
+}));
 
 app.use(express.json());
 
@@ -34,7 +38,7 @@ mongoose.connect('mongodb+srv://artem:artem1105@aiesmed.i7iu8ne.mongodb.net/assi
 });
 
 app.get('/', (req, res) => {
- res.send('Hello World!##!');
+ res.send('Hello World!updated');
 });
 
 app.post('/api/new', async (req, res) => {
