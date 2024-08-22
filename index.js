@@ -2,19 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
+import mysql from 'mysql2/promise';
+
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 8000;
-
-// app.use((req, res, next) => {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-access-token");
-//   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-//   next();
-// });
 
 app.use(cors({
   origin: '*', // Replace with your actual frontend domain
@@ -31,10 +25,15 @@ const openai = new OpenAI({
 let assistant_id = process.env.assistant_id;
 
 const run_finished_states = ['completed', 'failed', 'cancelled', 'expired', 'requires_action'];
+dotenv.config();
 
-mongoose.connect('mongodb+srv://artem:artem1105@aiesmed.i7iu8ne.mongodb.net/assistant', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+app.use(express.json());
+
+const db = await mysql.createConnection({
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'mydatabase',
 });
 
 app.get('/', (req, res) => {
@@ -151,61 +150,86 @@ app.post('/api/update-assistant-id', (req, res) => {
   assistant_id = newAssistantId;
   res.send(`Assistant ID updated to ${newAssistantId}`);
 });
-// //mongoDB
-const assistantSchema = new mongoose.Schema({
-  assistantId: { type: String, unique: true },
-  assistantName: { type: String, unique: false },
-  // Add other fields as necessary
-});
 
-const Assistant = mongoose.model('Assistant', assistantSchema); // Changed model name to singular
 
-app.post('/api/assistants', async (req, res) => {
-  console.log(req.body);
-  const assistant = new Assistant({
-    assistantId: req.body.assistantId,
-    assistantName: req.body.assistantName,
-    // Add other fields as necessary`
-  });
-  try {
-    await assistant.save();
-    res.status(201).json(assistant);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
 
+// API route to get all assistants
 app.get('/api/assistants', async (req, res) => {
   try {
-    const assistants = await Assistant.find();
-    res.json(assistants);
+    const [rows] = await db.execute('SELECT * FROM assistants');
+    res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-app.put('/api/assistants/:id', async (req, res) => {
-  const { id } = req.params;
-  const assistant = {
-    assistantId: req.body.assistantId,
-    assitantName: req.body.assitantName,
-  }
+// API route to create a new assistant
+app.post('/api/assistants', async (req, res) => {
+  const { assistantId, assistantName } = req.body;
   try {
-    const updatedAssistant = await Assistant.findByIdAndUpdate(id, assistant, { new: true });
-    if (!updatedAssistant) {
+    const [result] = await db.execute(
+      'INSERT INTO assistants (assistantId, assistantName) VALUES (?, ?)',
+      [assistantId, assistantName]
+    );
+    res.status(201).json({ id: result.insertId, assistantId, assistantName });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+// API route to create a new assistant
+app.post('/api/assistants', async (req, res) => {
+  const { assistantId, assistantName } = req.body;
+
+  try {
+    // Fetch the maximum current id
+    const [rows] = await db.execute('SELECT MAX(id) as maxId FROM assistants');
+    const nextId = rows[0].maxId !== null ? rows[0].maxId + 1 : 1; // Calculate the next id
+
+    console.log('Next ID:', nextId); // Debugging log for nextId
+
+    // Insert new assistant with the calculated id
+    const [result] = await db.execute(
+      'INSERT INTO assistants (id, assistantId, assistantName) VALUES (?, ?, ?)'
+      // [nextId, assistantId, assistantName]
+    );
+
+    console.log('Insert result:', result); // Debugging log for result
+    res.status(201).json({ id: nextId, assistantId, assistantName });
+  } catch (error) {
+    console.error('Error inserting data:', error.message); // Debugging log for errors
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+
+// API route to update an assistant
+app.post('/api/assistants/:id', async (req, res) => {
+  const { id } = req.params;
+  const { assistantId, assistantName } = req.body;
+  try {
+    const [result] = await db.execute(
+      'UPDATE assistants SET assistantId = ?, assistantName = ? WHERE id = ?',
+      [assistantId, assistantName, id]
+    );
+    if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Assistant not found' });
     }
-    res.json(updatedAssistant);
+    res.json({ id, assistantId, assistantName });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
+// API route to delete an assistant
 app.delete('/api/assistants/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const deletedAssistant = await Assistant.findByIdAndDelete(id);
-    if (!deletedAssistant) {
+    const [result] = await db.execute('DELETE FROM assistants WHERE id = ?', [id]);
+    if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Assistant not found' });
     }
     res.json({ message: 'Assistant deleted successfully' });
@@ -213,6 +237,7 @@ app.delete('/api/assistants/:id', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
